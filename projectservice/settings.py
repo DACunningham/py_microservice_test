@@ -37,16 +37,31 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    ## 3rd party
+    'rest_framework',
+    'rest_framework_swagger',
+
+    ## custom
+    'tokenauth',
+    'api',
+
+    # testing etc:
+    'django_jenkins',
+    'django_extensions',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'tokenauth.middleware.TokenAuthMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'projectservice.urls'
@@ -118,3 +133,39 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# CUSTOM AUTH
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'tokenauth.authbackends.TokenAuthBackend'
+)
+
+## REST
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        ## we need this for the browsable API to work
+        'rest_framework.authentication.SessionAuthentication',
+        'tokenauth.authbackends.RESTTokenAuthBackend',
+    )
+}
+
+# Services:
+
+## Service base urls without a trailing slash:
+USER_SERVICE_BASE_URL = 'http://staging.userservice.tangentme.com'
+
+JENKINS_TASKS = (
+    'django_jenkins.tasks.run_pylint',
+    'django_jenkins.tasks.with_coverage',
+    # 'django_jenkins.tasks.run_sloccount',
+    # 'django_jenkins.tasks.run_graphmodels'
+)
+
+PROJECT_APPS = (
+    'api',
+)
+
+CORS_ORIGIN_ALLOW_ALL = True
